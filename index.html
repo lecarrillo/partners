@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Chosen Palette: Adsmurai-Google Strategic Alliance -->
+    <!-- Application Structure Plan: He diseñado la aplicación como un dashboard de una sola página con navegación por pestañas (Visión General, Diagnóstico, Objetivos, Plan de Vuelo, Transformación). Esta estructura modular permite explorar un plan complejo de forma intuitiva, seccionando la información en bloques temáticos y evitando la sobrecarga de un documento largo. El usuario puede elegir en qué profundizar, lo que facilita tanto una vista rápida para la dirección como un análisis detallado para los equipos. -->
+    <!-- Visualization & Content Choices: 
+        - Inversión (Línea/Barra): Mostrar la trayectoria y el objetivo. Objetivo: Comparar. Interacción: Hover para detalles. Justificación: Visualizar el crecimiento es el KPI más impactante. (Chart.js)
+        - OKRs (Barras de Progreso): Medir el avance hacia metas clave. Objetivo: Informar. Interacción: Dinámico (simulado). Justificación: Ofrece un resumen visual e instantáneo del estado. (HTML/CSS/JS)
+        - Certificaciones (Donut): Mostrar el estado del talento. Objetivo: Organizar. Interacción: Hover. Justificación: Ilustra un KR crítico sobre el equipo de forma clara. (Chart.js)
+        - Plan de Vuelo (Timeline Interactivo): Detallar las fases del plan. Objetivo: Cambio/Organizar. Interacción: Clic en fase para ver detalles. Justificación: Transforma una tabla estática en una narrativa explorable. (HTML/CSS/JS)
+        - Contenido textual (Acordeones): Presentar el diagnóstico y los pilares de forma progresiva. Objetivo: Informar. Interacción: Clic para expandir. Justificación: Evita abrumar al usuario con texto y permite la exploración focalizada. (HTML/CSS/JS)
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <title>Dashboard Estratégico | Adsmurai & Google 2025-2027</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --adsmurai-blue: #0A2540;
+            --adsmurai-accent: #00AEEF;
+            --google-blue: #4285F4;
+            --google-green: #34A853;
+            --google-yellow: #FBBC05;
+            --google-red: #EA4335;
+            --bg-light: #f8fafc;
+            --text-primary: #1e293b;
+            --text-secondary: #475569;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-light);
+            color: var(--text-primary);
+        }
+        .nav-link {
+            transition: all 0.3s ease;
+            border-bottom: 2px solid transparent;
+        }
+        .nav-link.active {
+            border-bottom-color: var(--adsmurai-accent);
+            color: var(--adsmurai-blue);
+            font-weight: 600;
+        }
+        .nav-link:hover {
+            border-bottom-color: var(--adsmurai-accent);
+            color: var(--adsmurai-blue);
+        }
+        .kpi-card {
+            background-color: white;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.05);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .kpi-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.07), 0 4px 6px -4px rgb(0 0 0 / 0.07);
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            height: 350px;
+            max-height: 40vh;
+        }
+        .progress-bar-bg {
+            background-color: #e5e7eb;
+            border-radius: 9999px;
+            overflow: hidden;
+        }
+        .progress-bar {
+            height: 100%;
+            border-radius: 9999px;
+            transition: width 1s ease-in-out;
+            text-align: center;
+            color: white;
+            font-weight: bold;
+        }
+        .accordion-header {
+            cursor: pointer;
+        }
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease-out;
+        }
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -30px;
+            top: 0;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background-color: white;
+            border: 4px solid var(--google-blue);
+        }
+        .timeline {
+            border-left: 4px solid #e5e7eb;
+        }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body class="antialiased">
+
+    <div class="container mx-auto p-4 sm:p-6 lg:p-8">
+        <!-- Header -->
+        <header class="text-center mb-8">
+            <h1 class="text-3xl md:text-4xl font-extrabold" style="color: var(--adsmurai-blue);">Plan Estratégico 2025-2027</h1>
+            <p class="text-lg mt-2" style="color: var(--adsmurai-accent);">De Partner Clave a Socio de Co-innovación #1 de Google</p>
+        </header>
+
+        <!-- Navigation -->
+        <nav class="flex justify-center border-b mb-8">
+            <button class="nav-link py-4 px-6 text-sm sm:text-base font-medium text-slate-600 active" data-tab="tab-vision">Visión General</button>
+            <button class="nav-link py-4 px-6 text-sm sm:text-base font-medium text-slate-600" data-tab="tab-diagnostico">Diagnóstico</button>
+            <button class="nav-link py-4 px-6 text-sm sm:text-base font-medium text-slate-600" data-tab="tab-objetivos">Los 3 Objetivos</button>
+            <button class="nav-link py-4 px-6 text-sm sm:text-base font-medium text-slate-600" data-tab="tab-plan">Plan de Vuelo</button>
+            <button class="nav-link py-4 px-6 text-sm sm:text-base font-medium text-slate-600" data-tab="tab-transformacion">Transformación</button>
+        </nav>
+
+        <!-- Main Content -->
+        <main>
+            <!-- Tab: Visión General -->
+            <section id="tab-vision" class="tab-content">
+                 <div class="text-center mb-12 bg-white p-8 rounded-lg shadow-sm">
+                    <h2 class="text-2xl font-bold mb-2" style="color:var(--adsmurai-blue);">Nuestra Visión 2027</h2>
+                    <p class="text-xl max-w-3xl mx-auto" style="color:var(--text-secondary);">Consolidar a Adsmurai como el <strong style="color:var(--adsmurai-accent);">socio estratégico de co-innovación número uno</strong> de Google en España, liderando en volumen, simbiosis tecnológica y excelencia de equipo.</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                    <div class="kpi-card p-6 flex flex-col justify-between">
+                        <h3 class="font-bold text-lg mb-2">Inversión Gestionada</h3>
+                        <p class="text-4xl font-extrabold" style="color: var(--google-blue);">€180M</p>
+                        <p class="text-sm text-slate-500">Objetivo anual para 2027</p>
+                    </div>
+                    <div class="kpi-card p-6 flex flex-col justify-between">
+                        <h3 class="font-bold text-lg mb-2">Posición en Mercado</h3>
+                        <p class="text-4xl font-extrabold" style="color: var(--google-green);">Top 3</p>
+                        <p class="text-sm text-slate-500">Ranking de Agencias Partner en España</p>
+                    </div>
+                    <div class="kpi-card p-6 flex flex-col justify-between">
+                        <h3 class="font-bold text-lg mb-2">Retención de Talento</h3>
+                        <p class="text-4xl font-extrabold" style="color: var(--google-yellow);">&gt;95%</p>
+                        <p class="text-sm text-slate-500">Tasa de retención anual del equipo SEM</p>
+                    </div>
+                </div>
+
+                <div class="bg-white p-6 rounded-lg shadow-sm">
+                    <h3 class="font-bold text-xl mb-4 text-center">Evolución de la Inversión en Google (€M)</h3>
+                    <div class="chart-container mx-auto max-w-4xl">
+                        <canvas id="investmentChart"></canvas>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Tab: Diagnóstico -->
+            <section id="tab-diagnostico" class="tab-content hidden">
+                <div class="max-w-4xl mx-auto">
+                    <div class="text-center mb-8">
+                         <h2 class="text-2xl font-bold mb-2" style="color:var(--adsmurai-blue);">El Punto de Inflexión</h2>
+                         <p class="text-lg" style="color:var(--text-secondary);">El éxito comercial ha superado nuestras estructuras, revelando una "deuda estratégica" que debemos afrontar para la siguiente fase de crecimiento.</p>
+                    </div>
+
+                    <div id="accordion-container" class="space-y-4">
+                        <div class="accordion-item bg-white rounded-lg shadow-sm">
+                            <div class="accordion-header flex justify-between items-center p-5">
+                                <h3 class="font-semibold text-lg">La Trampa de la Reactividad</h3>
+                                <span class="text-2xl font-light transform transition-transform duration-300">+</span>
+                            </div>
+                            <div class="accordion-content px-5">
+                                <p class="pb-5 text-slate-600">El equipo opera en un modo predominantemente reactivo, y las reuniones semanales a menudo "normalizan o dilatan el malestar existente". Esta falta de proactividad en áreas clave como certificaciones y premios es un síntoma que frena la innovación y la excelencia.</p>
+                            </div>
+                        </div>
+                        <div class="accordion-item bg-white rounded-lg shadow-sm">
+                            <div class="accordion-header flex justify-between items-center p-5">
+                                <h3 class="font-semibold text-lg">Conflicto Estratégico: AMP vs. Google</h3>
+                                <span class="text-2xl font-light transform transition-transform duration-300">+</span>
+                            </div>
+                            <div class="accordion-content px-5">
+                                <p class="pb-5 text-slate-600">Se ha identificado una fricción fundamental: el objetivo corporativo de vender nuestra plataforma (AMP) choca con los objetivos de Google, que no tiene interés en potenciar soluciones competidoras. Esta falta de alineación genera confusión y frena la colaboración profunda.</p>
+                            </div>
+                        </div>
+                        <div class="accordion-item bg-white rounded-lg shadow-sm">
+                            <div class="accordion-header flex justify-between items-center p-5">
+                                <h3 class="font-semibold text-lg">Procesos Ineficientes y Falta de Visibilidad</h3>
+                                <span class="text-2xl font-light transform transition-transform duration-300">+</span>
+                            </div>
+                            <div class="accordion-content px-5">
+                                <p class="pb-5 text-slate-600">La carencia de visibilidad sobre el pipeline de ventas, la deficiente maduración de leads y la gestión de recursos con peticiones "last minute" generan sobrecarga, frustración y pérdida de oportunidades estratégicas.</p>
+                            </div>
+                        </div>
+                        <div class="accordion-item bg-white rounded-lg shadow-sm">
+                            <div class="accordion-header flex justify-between items-center p-5">
+                                <h3 class="font-semibold text-lg">Brechas de Talento y Conocimiento</h3>
+                                <span class="text-2xl font-light transform transition-transform duration-300">+</span>
+                            </div>
+                            <div class="accordion-content px-5">
+                                <p class="pb-5 text-slate-600">La salida de perfiles clave y la falta de un plan de formación transversal impiden que el equipo alcance su máximo potencial y obtenga las certificaciones necesarias, lo cual es un "obstáculo significativo" para el crecimiento y para obtener la designación GCAS.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Tab: Los 3 Objetivos -->
+            <section id="tab-objetivos" class="tab-content hidden">
+                <div class="text-center mb-10">
+                    <h2 class="text-2xl font-bold" style="color:var(--adsmurai-blue);">Objetivos Estratégicos (OKRs) 2025-2027</h2>
+                </div>
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <!-- Objetivo 1 -->
+                    <div class="kpi-card p-6">
+                        <h3 class="text-xl font-bold mb-4 border-b-2 pb-2" style="border-color: var(--google-blue);">1. Liderazgo Absoluto del Mercado</h3>
+                        <ul class="space-y-4 mt-4">
+                            <li>
+                                <p class="font-semibold">Inversión Gestionada: <span class="float-right font-normal text-slate-500">Target: €180M</span></p>
+                                <div class="progress-bar-bg h-4 w-full mt-1"><div class="progress-bar" style="width: 44%; background-color: var(--google-blue);">€80M</div></div>
+                            </li>
+                            <li>
+                                <p class="font-semibold">Ranking de Agencias: <span class="float-right font-normal text-slate-500">Target: Top 3</span></p>
+                                <div class="progress-bar-bg h-4 w-full mt-1"><div class="progress-bar" style="width: 50%; background-color: var(--google-blue);">Top 6</div></div>
+                            </li>
+                            <li>
+                                <p class="font-semibold">Certificación GCAS: <span class="float-right font-normal text-slate-500">Target: H1 2027</span></p>
+                                <div class="progress-bar-bg h-4 w-full mt-1"><div class="progress-bar" style="width: 25%; background-color: var(--google-blue);">En proceso</div></div>
+                            </li>
+                             <li>
+                                <p class="font-semibold">Nuevos Clientes LCS: <span class="float-right font-normal text-slate-500">Target: 5</span></p>
+                                <div class="progress-bar-bg h-4 w-full mt-1"><div class="progress-bar" style="width: 20%; background-color: var(--google-blue);">1</div></div>
+                            </li>
+                        </ul>
+                    </div>
+                    <!-- Objetivo 2 -->
+                    <div class="kpi-card p-6">
+                        <h3 class="text-xl font-bold mb-4 border-b-2 pb-2" style="border-color: var(--google-green);">2. Equipo de Élite y Cultura Proactiva</h3>
+                        <ul class="space-y-4 mt-4">
+                            <li>
+                                <p class="font-semibold">Retención de Talento: <span class="float-right font-normal text-slate-500">Target: >95%</span></p>
+                                <div class="progress-bar-bg h-4 w-full mt-1"><div class="progress-bar" style="width: 90%; background-color: var(--google-green);">90%</div></div>
+                            </li>
+                            <li>
+                                <p class="font-semibold">Certificaciones "Full-Stack": <span class="float-right font-normal text-slate-500">Target: 100%</span></p>
+                                <div class="progress-bar-bg h-4 w-full mt-1"><div class="progress-bar" style="width: 40%; background-color: var(--google-green);">40%</div></div>
+                            </li>
+                            <li>
+                                <p class="font-semibold">Mejora de eNPS: <span class="float-right font-normal text-slate-500">Target: +20 pts</span></p>
+                                <div class="progress-bar-bg h-4 w-full mt-1"><div class="progress-bar" style="width: 10%; background-color: var(--google-green); font-size: 0.7rem;">+2 pts</div></div>
+                            </li>
+                            <li>
+                                <p class="font-semibold">Eficiencia Operativa: <span class="float-right font-normal text-slate-500">Target: >30%</span></p>
+                                <div class="progress-bar-bg h-4 w-full mt-1"><div class="progress-bar" style="width: 15%; background-color: var(--google-green);">+5%</div></div>
+                            </li>
+                        </ul>
+                    </div>
+                     <!-- Objetivo 3 -->
+                    <div class="kpi-card p-6">
+                        <h3 class="text-xl font-bold mb-4 border-b-2 pb-2" style="border-color: var(--google-yellow);">3. Pivote a Co-innovación</h3>
+                        <ul class="space-y-4 mt-4">
+                            <li>
+                                <p class="font-semibold">Google VIP Deal: <span class="float-right font-normal text-slate-500">Target: Superar Tier 3</span></p>
+                                <div class="progress-bar-bg h-4 w-full mt-1"><div class="progress-bar" style="width: 100%; background-color: var(--google-yellow);">Tier 3 Alcanzado</div></div>
+                            </li>
+                             <li>
+                                <p class="font-semibold">Proyectos Co-desarrollo: <span class="float-right font-normal text-slate-500">Target: 2</span></p>
+                                <div class="progress-bar-bg h-4 w-full mt-1"><div class="progress-bar" style="width: 25%; background-color: var(--google-yellow);">Ideación</div></div>
+                            </li>
+                             <li>
+                                <p class="font-semibold">Mix de Producto (Non-Search): <span class="float-right font-normal text-slate-500">Target: >60%</span></p>
+                                <div class="progress-bar-bg h-4 w-full mt-1"><div class="progress-bar" style="width: 45%; background-color: var(--google-yellow);">45%</div></div>
+                            </li>
+                             <li>
+                                <p class="font-semibold">Crecimiento Internacional: <span class="float-right font-normal text-slate-500">Target: >20%</span></p>
+                                <div class="progress-bar-bg h-4 w-full mt-1"><div class="progress-bar" style="width: 10%; background-color: var(--google-yellow);">2%</div></div>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Tab: Plan de Vuelo -->
+            <section id="tab-plan" class="tab-content hidden">
+                 <div class="text-center mb-10">
+                    <h2 class="text-2xl font-bold" style="color:var(--adsmurai-blue);">Plan de Vuelo: Hoja de Ruta Estratégica</h2>
+                </div>
+                <div class="max-w-5xl mx-auto">
+                    <div class="timeline ml-5 pl-8 relative">
+                        <!-- Corto Plazo -->
+                        <div class="timeline-item mb-12">
+                            <h3 class="text-xl font-bold mb-2" style="color:var(--google-blue);">Corto Plazo (Próximos 6-9 meses)</h3>
+                            <p class="font-semibold text-slate-500 mb-4">Fase de Cimentación y Confianza</p>
+                            <div class="bg-white p-6 rounded-lg shadow-sm">
+                                <ul class="list-disc list-inside space-y-2 text-slate-700">
+                                    <li>Presentar plan estratégico a la dirección de Google para generar confianza.</li>
+                                    <li>Reestructurar y estabilizar el equipo con el modelo "Hub & Spoke".</li>
+                                    <li>Lanzar el programa de formación "Academia Adsmurai-Google" y el plan de certificaciones.</li>
+                                    <li>Pivotar la estrategia de producto, abandonando el enfoque competidor de AMP.</li>
+                                    <li>Maximizar el VIP Deal 2025 y diversificar la cartera de clientes en España.</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <!-- Medio Plazo -->
+                        <div class="timeline-item mb-12">
+                            <h3 class="text-xl font-bold mb-2" style="color:var(--google-green);">Medio Plazo (9-18 meses)</h3>
+                             <p class="font-semibold text-slate-500 mb-4">Fase de Aceleración y Excelencia</p>
+                             <div class="bg-white p-6 rounded-lg shadow-sm">
+                                <ul class="list-disc list-inside space-y-2 text-slate-700">
+                                    <li>Lograr la certificación **GCAS** y ganar premios relevantes (YT Works, GMP Awards).</li>
+                                    <li>Lanzar el primer producto tecnológico co-desarrollado con Google.</li>
+                                    <li>Ejecutar el plan de expansión internacional en LATAM.</li>
+                                    <li>Alcanzar el 100% de certificaciones "full-stack" en el equipo.</li>
+                                    <li>Implementar los nuevos procesos de colaboración interdepartamental.</li>
+                                </ul>
+                            </div>
+                        </div>
+                         <!-- Largo Plazo -->
+                        <div class="timeline-item">
+                            <h3 class="text-xl font-bold mb-2" style="color:var(--adsmurai-blue);">Largo Plazo (18-24+ meses)</h3>
+                             <p class="font-semibold text-slate-500 mb-4">Fase de Liderazgo Indiscutible</p>
+                             <div class="bg-white p-6 rounded-lg shadow-sm">
+                                <ul class="list-disc list-inside space-y-2 text-slate-700">
+                                    <li>Alcanzar el estatus de #1 Partner de Google en España.</li>
+                                    <li>Construir un portfolio de 2-3 soluciones tecnológicas conjuntas, generando nuevas líneas de ingresos.</li>
+                                    <li>Consolidar el liderazgo regional en 2 mercados internacionales.</li>
+                                    <li>Ser reconocidos como un "imán de talento" y el mejor lugar para desarrollar una carrera en el ecosistema Google.</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Tab: Transformación -->
+            <section id="tab-transformacion" class="tab-content hidden">
+                 <div class="text-center mb-10">
+                    <h2 class="text-2xl font-bold" style="color:var(--adsmurai-blue);">Pilares de la Transformación</h2>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div class="kpi-card p-6">
+                        <h3 class="text-xl font-bold mb-2">Evolución Organizativa</h3>
+                        <p class="text-slate-600 mb-4">Implementar el modelo **"Hub & Spoke"** para fomentar la especialización y la proactividad, con nuevos roles de SEM Strategist y Leads de Especialización que cambien el incentivo desde la ejecución a la creación de valor estratégico.</p>
+                        <div class="chart-container h-64 max-h-64">
+                            <canvas id="orgChart"></canvas>
+                        </div>
+                    </div>
+                     <div class="kpi-card p-6">
+                        <h3 class="text-xl font-bold mb-2">Capital Humano</h3>
+                        <p class="text-slate-600 mb-4">Lanzar la **"Academia Adsmurai-Google"** para formalizar la formación continua y ejecutar un plan de certificación "full-stack" vinculado al desarrollo de carrera y a los objetivos de la compañía como la obtención del GCAS.</p>
+                        <div class="chart-container h-64 max-h-64">
+                            <canvas id="certsChart"></canvas>
+                        </div>
+                    </div>
+                     <div class="kpi-card p-6">
+                        <h3 class="text-xl font-bold mb-2">Sinergias Internas</h3>
+                        <p class="text-slate-600">Formalizar los procesos de colaboración para crear un **Pipeline Unificado** de ventas con visibilidad completa, planes de crecimiento conjuntos por cliente y OKRs compartidos entre Partners, Ventas y Producto para alinear incentivos.</p>
+                    </div>
+                     <div class="kpi-card p-6">
+                        <h3 class="text-xl font-bold mb-2">Partnership Sofisticado</h3>
+                        <p class="text-slate-600">Evolucionar la relación con Google para ser un socio de co-innovación. Superar sistemáticamente los objetivos del VIP Deal para negociar beneficios "Tier 4" y proponer un roadmap de **co-desarrollo tecnológico** en áreas como MMM y activación de 1st party data.</p>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // --- DATA ---
+            const investmentData = {
+                labels: ['2020', '2021', '2022', '2023', '2024', '2025 (F)', '2026 (F)', '2027 (F)'],
+                data: [5, 12, 20.6, 39.0, 80.0, 100.0, 135.0, 180.0]
+            };
+
+            const certsData = {
+                labels: ['Core Google Ads', 'Analytics (GAIQ)', 'GMP (SA360, CM360)', 'Medición Avanzada', 'GCP (Data, IA)'],
+                data: [80, 70, 40, 50, 10] // Simulación de % completado
+            };
+            
+            const orgData = {
+                labels: ['Liderazgo', 'Estrategia', 'Especialización', 'Ejecución'],
+                data: [3, 3, 2, 5] // Número de personas por capa
+            };
+
+            // --- CHART RENDERING ---
+            let investmentChart, certsChart, orgChart;
+
+            function renderInvestmentChart() {
+                const ctx = document.getElementById('investmentChart').getContext('2d');
+                investmentChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: investmentData.labels,
+                        datasets: [{
+                            label: 'Inversión Gestionada (€M)',
+                            data: investmentData.data,
+                            backgroundColor: (context) => {
+                                const index = context.dataIndex;
+                                return index < 5 ? 'rgba(66, 133, 244, 0.7)' : 'rgba(0, 174, 239, 0.7)';
+                            },
+                            borderColor: (context) => {
+                                const index = context.dataIndex;
+                                return index < 5 ? 'rgba(66, 133, 244, 1)' : 'rgba(0, 174, 239, 1)';
+                            },
+                            borderWidth: 2,
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                title: { display: true, text: 'Millones de Euros (€)' }
+                            },
+                             x: {
+                                title: { display: true, text: 'Año (F = Forecast)' }
+                            }
+                        },
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        return `Inversión: ${context.raw} M€`;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            function renderCertsChart() {
+                 const ctx = document.getElementById('certsChart').getContext('2d');
+                 certsChart = new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: certsData.labels,
+                        datasets: [{
+                            label: '% de Avance',
+                            data: certsData.data,
+                            backgroundColor: [
+                                'rgba(66, 133, 244, 0.8)',
+                                'rgba(52, 168, 83, 0.8)',
+                                'rgba(251, 188, 5, 0.8)',
+                                'rgba(234, 67, 53, 0.8)',
+                                'rgba(0, 174, 239, 0.8)'
+                            ],
+                            hoverOffset: 4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { position: 'top' },
+                            title: { display: true, text: 'Avance en Plan de Certificaciones' }
+                        }
+                    }
+                });
+            }
+            
+            function renderOrgChart() {
+                const ctx = document.getElementById('orgChart').getContext('2d');
+                orgChart = new Chart(ctx, {
+                    type: 'polarArea',
+                    data: {
+                        labels: orgData.labels,
+                        datasets: [{
+                            label: 'Miembros del Equipo',
+                            data: orgData.data,
+                            backgroundColor: [
+                                'rgba(10, 37, 64, 0.7)',
+                                'rgba(0, 174, 239, 0.7)',
+                                'rgba(66, 133, 244, 0.7)',
+                                'rgba(153, 165, 179, 0.7)'
+                            ]
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { position: 'top' },
+                            title: { display: true, text: 'Estructura de Equipo "Hub & Spoke"' }
+                        }
+                    }
+                });
+            }
+
+            // --- TAB & ACCORDION LOGIC ---
+            const tabs = document.querySelectorAll('.nav-link');
+            const tabContents = document.querySelectorAll('.tab-content');
+            let activeCharts = {};
+
+            function switchTab(tabId) {
+                tabs.forEach(tab => {
+                    tab.classList.toggle('active', tab.dataset.tab === tabId);
+                });
+                tabContents.forEach(content => {
+                    content.classList.toggle('hidden', content.id !== tabId);
+                });
+
+                // Lazy load charts
+                if (tabId === 'tab-vision' && !activeCharts.investment) {
+                    renderInvestmentChart();
+                    activeCharts.investment = true;
+                }
+                if (tabId === 'tab-transformacion' && !activeCharts.certs) {
+                    renderCertsChart();
+                    renderOrgChart();
+                    activeCharts.certs = true;
+                    activeCharts.org = true;
+                }
+            }
+            
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    switchTab(tab.dataset.tab);
+                });
+            });
+
+            document.querySelectorAll('.accordion-header').forEach(header => {
+                header.addEventListener('click', () => {
+                    const content = header.nextElementSibling;
+                    const icon = header.querySelector('span');
+
+                    // Close other accordions
+                    document.querySelectorAll('.accordion-content').forEach(c => {
+                        if (c !== content) {
+                            c.style.maxHeight = null;
+                            c.previousElementSibling.querySelector('span').classList.remove('rotate-45');
+                        }
+                    });
+
+                    if (content.style.maxHeight) {
+                        content.style.maxHeight = null;
+                        icon.classList.remove('rotate-45');
+                    } else {
+                        content.style.maxHeight = content.scrollHeight + "px";
+                        icon.classList.add('rotate-45');
+                    } 
+                });
+            });
+
+            // Initial load
+            switchTab('tab-vision');
+        });
+    </script>
+
+</body>
+</html>
