@@ -1,666 +1,1245 @@
 <!DOCTYPE html>
+
 <html lang="es">
+
 <head>
+
     <meta charset="UTF-8">
+
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Chosen Palette: Adsmurai-Google Strategic Alliance v4 -->
+
+    <!-- Application Structure Plan: El dashboard se renombra a "Google Partnership Hub" para reflejar su doble función: estrategia y seguimiento. Se mantiene la estructura de pestañas por su claridad. La pestaña "Hitos" se rediseña por completo para mostrar una línea de tiempo vertical, siguiendo la referencia visual del usuario. Esto mejora la visualización cronológica de los logros. El resto de las pestañas conservan la estructura y contenido de la v3, que ya habían sido validados. -->
+
+    <!-- Visualization & Content Choices: 
+
+        - Hitos (Línea de Tiempo Vertical): Se implementa un nuevo diseño de timeline vertical para la pestaña de Hitos. Objetivo: Organizar/Cambio. Interacción: Visual. Justificación: Cumple con el requisito explícito del usuario para una mejor visualización cronológica. (HTML/CSS)
+
+        - KPIs, OKRs, Deals (Sin cambios): Se mantienen las visualizaciones de la v3 (Tarjetas, Barras de Progreso, Tabla, Gauge) ya que el contenido fue aprobado y solo se solicitó un cambio en el enfoque general y en la sección de hitos. Se añade la tabla de KPI Deal.
+
+    -->
+
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+
     <title>Google Partnership Hub | Adsmurai 2025-2027</title>
+
     <script src="https://cdn.tailwindcss.com"></script>
+
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+
     <style>
+
         :root {
+
             --adsmurai-blue: #0A2540;
+
             --adsmurai-accent: #00AEEF;
+
             --google-blue: #4285F4;
+
             --google-green: #34A853;
+
             --google-yellow: #FBBC05;
+
             --google-red: #EA4335;
+
             --bg-light: #f8fafc;
+
             --text-primary: #1e293b;
+
             --text-secondary: #475569;
+
         }
+
         body {
+
             font-family: 'Inter', sans-serif;
+
             background-color: var(--bg-light);
+
             color: var(--text-primary);
+
         }
+
         .nav-link {
+
             transition: all 0.3s ease;
+
             border-bottom: 3px solid transparent;
+
             padding-bottom: 8px;
-            cursor: pointer;
+
         }
+
         .nav-link.active {
+
             border-bottom-color: var(--adsmurai-accent);
+
             color: var(--adsmurai-blue);
+
             font-weight: 600;
+
         }
+
         .nav-link:hover {
+
             color: var(--adsmurai-blue);
+
         }
+
         .kpi-card {
+
             background-color: white;
+
             border-radius: 0.75rem;
+
             box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.05);
+
             transition: transform 0.3s ease, box-shadow 0.3s ease;
+
         }
+
         .kpi-card:hover {
+
             transform: translateY(-5px);
+
             box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.07), 0 4px 6px -4px rgb(0 0 0 / 0.07);
+
         }
+
         .chart-container {
+
             position: relative;
+
             width: 100%;
+
             height: 350px;
+
             max-height: 40vh;
+
         }
+
         .progress-bar-bg {
+
             background-color: #e5e7eb;
+
             border-radius: 9999px;
+
             overflow: hidden;
+
         }
+
         .progress-bar {
+
             height: 100%;
+
             border-radius: 9999px;
+
             transition: width 1s ease-in-out;
+
             text-align: center;
+
             color: white;
+
             font-weight: 600;
+
             font-size: 0.75rem;
+
             line-height: 1.6;
-            white-space: nowrap;
-            padding: 0 5px;
+
         }
+
         .accordion-header { cursor: pointer; }
+
         .accordion-content {
+
             max-height: 0;
+
             overflow: hidden;
+
             transition: max-height 0.5s ease-out;
+
         }
+
         .timeline-vertical::before {
+
             content: '';
+
             position: absolute;
+
             left: 1rem;
+
             top: 0;
+
             bottom: 0;
+
             width: 4px;
+
             background-color: #e5e7eb;
+
             border-radius: 2px;
+
             transform: translateX(-50%);
+
         }
+
         .timeline-vertical-item {
+
             position: relative;
+
             padding-left: 2.5rem;
+
         }
+
         .timeline-vertical-dot {
+
             content: '';
+
             position: absolute;
+
             left: 1rem;
+
             top: 0.25rem;
+
             width: 20px;
+
             height: 20px;
+
             border-radius: 50%;
+
             background-color: white;
+
             border: 4px solid var(--google-blue);
+
             transform: translateX(-50%);
+
         }
+
         .timeline-vertical-item.completed .timeline-vertical-dot {
+
             border-color: var(--google-green);
+
         }
+
         .deal-progress-bar {
+
             position: relative;
+
             height: 1.25rem;
+
             background-color: #e5e7eb;
+
             border-radius: 0.25rem;
+
             overflow: hidden;
+
         }
+
         .deal-progress-bar-fill {
+
             position: absolute;
+
             height: 100%;
+
             background-color: var(--google-blue);
+
             transition: width 0.5s ease-in-out;
+
         }
+
         .deal-progress-marker {
+
             position: absolute;
+
             top: 0;
+
             bottom: 0;
+
             width: 2px;
+
             background-color: rgba(0,0,0,0.3);
-            z-index: 10;
+
         }
+
     </style>
+
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
 </head>
+
 <body class="antialiased">
 
+
+
     <div class="container mx-auto p-4 sm:p-6 lg:p-8">
+
         <header class="text-center mb-8">
+
             <h1 class="text-3xl md:text-4xl font-extrabold" style="color: var(--adsmurai-blue);">Google Partnership Hub 2025-2027</h1>
+
             <p class="text-lg mt-2" style="color: var(--adsmurai-accent);">Estrategia, Seguimiento y Hoja de Ruta de Hitos</p>
+
         </header>
 
+
+
         <nav class="flex flex-wrap justify-center border-b mb-8">
+
             <button class="nav-link py-4 px-3 sm:px-4 text-xs sm:text-base font-medium text-slate-600 active" data-tab="tab-vision">Visión General</button>
+
             <button class="nav-link py-4 px-3 sm:px-4 text-xs sm:text-base font-medium text-slate-600" data-tab="tab-diagnostico">Diagnóstico</button>
+
             <button class="nav-link py-4 px-3 sm:px-4 text-xs sm:text-base font-medium text-slate-600" data-tab="tab-objetivos">Los 3 Objetivos</button>
+
             <button class="nav-link py-4 px-3 sm:px-4 text-xs sm:text-base font-medium text-slate-600" data-tab="tab-deals">Seguimiento Deals</button>
+
             <button class="nav-link py-4 px-3 sm:px-4 text-xs sm:text-base font-medium text-slate-600" data-tab="tab-hitos">Hitos</button>
+
             <button class="nav-link py-4 px-3 sm:px-4 text-xs sm:text-base font-medium text-slate-600" data-tab="tab-transformacion">Pilares</button>
+
         </nav>
 
+
+
         <main>
+
             <section id="tab-vision" class="tab-content">
+
                  <div class="text-center mb-12 bg-white p-8 rounded-lg shadow-sm">
+
                     <h2 class="text-2xl font-bold mb-2" style="color:var(--adsmurai-blue);">Nuestra Visión 2027</h2>
+
                     <p class="text-xl max-w-3xl mx-auto" style="color:var(--text-secondary);">Consolidar a Adsmurai como el <strong style="color:var(--adsmurai-accent);">socio estratégico de co-innovación número uno</strong> de Google en España, liderando en volumen, simbiosis tecnológica y excelencia de equipo.</p>
+
                 </div>
+
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+
                     <div class="kpi-card p-6 flex flex-col justify-between">
+
                         <h3 class="font-bold text-lg mb-2">Inversión Gestionada</h3>
+
                         <p class="text-4xl font-extrabold" style="color: var(--google-blue);">€150M</p>
+
                         <p class="text-sm text-slate-500">Objetivo anual para 2027</p>
+
                     </div>
+
                     <div class="kpi-card p-6 flex flex-col justify-between">
+
                         <h3 class="font-bold text-lg mb-2">Posición en Mercado</h3>
+
                         <p class="text-4xl font-extrabold" style="color: var(--google-green);">Top 3</p>
+
                         <p class="text-sm text-slate-500">Ranking de Agencias Partner</p>
+
                     </div>
+
                     <div class="kpi-card p-6 flex flex-col justify-between">
+
                         <h3 class="font-bold text-lg mb-2">Retención de Talento</h3>
+
                         <p class="text-4xl font-extrabold" style="color: var(--google-yellow);">&gt;95%</p>
+
                         <p class="text-sm text-slate-500">Tasa de retención anual SEM</p>
+
                     </div>
+
                     <div class="kpi-card p-6 flex flex-col justify-between">
+
                         <h3 class="font-bold text-lg mb-2">Net Revenue (Deals)</h3>
+
                         <p class="text-4xl font-extrabold" style="color: var(--adsmurai-accent);">€340K</p>
+
                         <p class="text-sm text-slate-500">Incentivos Objetivo 2025</p>
+
                     </div>
+
                 </div>
+
                 <div class="bg-white p-6 rounded-lg shadow-sm">
+
                     <h3 class="font-bold text-xl mb-4 text-center">Evolución de la Inversión en Google (€M)</h3>
+
                     <div class="chart-container mx-auto max-w-4xl">
+
                         <canvas id="investmentChart"></canvas>
+
                     </div>
+
                 </div>
+
             </section>
+
+
 
             <section id="tab-diagnostico" class="tab-content hidden">
+
                 <div class="max-w-4xl mx-auto">
+
                     <div class="text-center mb-8">
+
                          <h2 class="text-2xl font-bold mb-2" style="color:var(--adsmurai-blue);">El Diagnóstico Afinado</h2>
+
                          <p class="text-lg" style="color:var(--text-secondary);">El feedback del equipo confirma y enriquece el análisis: el éxito ha generado una "deuda estratégica" que debemos saldar.</p>
+
                     </div>
+
                     <div id="accordion-container" class="space-y-4">
+
                         <div class="accordion-item bg-white rounded-lg shadow-sm">
+
                             <div class="accordion-header flex justify-between items-center p-5">
+
                                 <h3 class="font-semibold text-lg">La Trampa de la Reactividad Estructural</h3>
+
                                 <span class="text-2xl font-light transform transition-transform duration-300">+</span>
+
                             </div>
+
                             <div class="accordion-content px-5">
+
                                 <p class="pb-5 text-slate-600"><strong>Confirmado:</strong> A pesar de la proactividad innata del equipo, las dinámicas de la agencia nos obligan a ser reactivos. Es un problema estructural, no de actitud. La falta de flujos de comunicación claros (verticales y horizontales) agrava esta situación.</p>
+
                             </div>
+
                         </div>
+
                         <div class="accordion-item bg-white rounded-lg shadow-sm">
+
                             <div class="accordion-header flex justify-between items-center p-5">
+
                                 <h3 class="font-semibold text-lg">Conflicto Estratégico: Reto Sistémico</h3>
+
                                 <span class="text-2xl font-light transform transition-transform duration-300">+</span>
+
                             </div>
+
                             <div class="accordion-content px-5">
+
                                 <p class="pb-5 text-slate-600"><strong>Crítico:</strong> La desalineación con los KPIs de Google (y futuros partners como Microsoft) es un freno. Debemos definir una estrategia de partnership a nivel de agencia que alinee los objetivos corporativos con los de nuestros socios tecnológicos.</p>
+
                             </div>
+
                         </div>
+
                          <div class="accordion-item bg-white rounded-lg shadow-sm">
+
                             <div class="accordion-header flex justify-between items-center p-5">
+
                                 <h3 class="font-semibold text-lg">Procesos Ineficientes y Visibilidad Nula</h3>
+
                                 <span class="text-2xl font-light transform transition-transform duration-300">+</span>
+
                             </div>
+
                             <div class="accordion-content px-5">
+
                                 <p class="pb-5 text-slate-600"><strong>Añadido:</strong> Es un mal que afecta a toda la estructura, no solo a Sales. La idea de un "brief de imprescindibles" para iniciar procesos es un ejemplo de solución que debe estandarizarse y aplicarse transversalmente para evitar la ineficiencia y la sobrecarga.</p>
+
                             </div>
+
                         </div>
+
                         <div class="accordion-item bg-white rounded-lg shadow-sm">
+
                             <div class="accordion-header flex justify-between items-center p-5">
+
                                 <h3 class="font-semibold text-lg">Talento: El Riesgo de "Quemar" a los Perfiles</h3>
+
                                 <span class="text-2xl font-light transform transition-transform duration-300">+</span>
+
                             </div>
+
                             <div class="accordion-content px-5">
+
                                 <p class="pb-5 text-slate-600"><strong>Alerta Máxima:</strong> El equipo es autodidacta y, a la vez, se le exige formar a toda la empresa sin reconocimiento ni compensación. Esta dinámica es insostenible, quema a los perfiles clave y pone en riesgo la consecución de objetivos. Es imperativo invertir en su desarrollo y reconocer su labor formativa.</p>
+
                             </div>
+
                         </div>
+
                     </div>
+
                 </div>
+
             </section>
+
+
 
             <section id="tab-objetivos" class="tab-content hidden">
+
                 <div class="text-center mb-10">
+
                     <h2 class="text-2xl font-bold" style="color:var(--adsmurai-blue);">Objetivos Estratégicos (OKRs) 2025</h2>
+
                 </div>
+
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
                     <div class="kpi-card p-6">
+
                         <h3 class="text-xl font-bold mb-4 border-b-2 pb-2" style="border-color: var(--google-blue);">1. Liderazgo de Mercado</h3>
+
                         <ul class="space-y-4 mt-4">
+
                             <li>
+
                                 <p class="font-semibold">Inversión Gestionada: <span class="float-right font-normal text-slate-500">Target: €100M</span></p>
+
                                 <div class="progress-bar-bg h-5 w-full mt-1"><div class="progress-bar" style="width: 70%; background-color: var(--google-blue);">€120M</div></div>
+
                             </li>
+
                             <li>
+
                                 <p class="font-semibold">Ranking de Agencias: <span class="float-right font-normal text-slate-500">Target: Top 3</span></p>
+
                                 <div class="progress-bar-bg h-5 w-full mt-1"><div class="progress-bar" style="width: 90%; background-color: var(--google-blue);">Top 4</div></div>
+
                             </li>
+
                             <li>
+
                                 <p class="font-semibold">Certificación GCAS: <span class="float-right font-normal text-slate-500">Target: H1 2027</span></p>
+
                                 <div class="progress-bar-bg h-5 w-full mt-1"><div class="progress-bar" style="width: 100%; background-color: var(--google-red);">out of scope</div></div>
+
                             </li>
+
                              <li>
+
                                 <p class="font-semibold">Leads Generados <span class="float-right font-normal text-slate-500">Target: 5</span></p>
+
                                 <div class="progress-bar-bg h-5 w-full mt-1"><div class="progress-bar" style="width: 100%; background-color: var(--google-blue);">7</div></div>
+
                             </li>
+
                         </ul>
+
                     </div>
+
                     <div class="kpi-card p-6">
+
                         <h3 class="text-xl font-bold mb-4 border-b-2 pb-2" style="border-color: var(--google-green);">2. Equipo de Élite</h3>
+
                         <ul class="space-y-4 mt-4">
+
                             <li>
+
                                 <p class="font-semibold">Retención de Talento: <span class="float-right font-normal text-slate-500">Target: >95%</span></p>
+
                                 <div class="progress-bar-bg h-5 w-full mt-1"><div class="progress-bar" style="width: 100%; background-color: var(--google-green);">100%</div></div>
+
                             </li>
+
                             <li>
+
                                 <p class="font-semibold">Certificaciones "Full-Stack": <span class="float-right font-normal text-slate-500">Target: 100%</span></p>
+
                                 <div class="progress-bar-bg h-5 w-full mt-1"><div class="progress-bar" style="width: 100%; background-color: var(--google-green);">100%</div></div>
+
                             </li>
+
                             <li>
+
                                 <p class="font-semibold">Mejora de eNPS: <span class="float-right font-normal text-slate-500">Target: +20 pts</span></p>
+
                                 <div class="progress-bar-bg h-5 w-full mt-1"><div class="progress-bar" style="width: 100%; background-color: var(--google-red);">Pending implementation</div></div>
+
                             </li>
+
                             <li>
+
                                 <p class="font-semibold">Eficiencia Operativa: <span class="float-right font-normal text-slate-500">Target: >30%</span></p>
+
                                 <div class="progress-bar-bg h-5 w-full mt-1"><div class="progress-bar" style="width: 100%; background-color: var(--google-red);">non-quantifiable</div></div>
+
                             </li>
+
                         </ul>
+
                     </div>
+
                     <div class="kpi-card p-6">
+
                         <h3 class="text-xl font-bold mb-4 border-b-2 pb-2" style="border-color: var(--google-yellow);">3. Co-innovación y Sinergia</h3>
+
                         <ul class="space-y-4 mt-4">
+
                             <li>
-                                <div class="flex justify-between items-center mb-1">
-                                    <p class="font-semibold">VIP Deal (Inversión)</p>
-                                    <span class="text-xs font-bold text-green-600 bg-green-100 px-2 py-0.5 rounded">Tier 2 Alcanzado</span>
-                                </div>
-                                <span class="text-xs text-slate-500 block mb-1">Compliance 100% Garantizado</span>
-                                <div class="progress-bar-bg h-5 w-full"><div class="progress-bar" style="width: 100%; background-color: var(--google-green);">100% (Tier 2)</div></div>
+
+                                <p class="font-semibold">VIP & KPI Deal: <span class="float-right font-normal text-slate-500">Target: 100%</span></p>
+
+                                <div class="progress-bar-bg h-5 w-full mt-1"><div class="progress-bar" style="width: 70%; background-color: var(--google-yellow);">70%</div></div>
+
                             </li>
+
                              <li>
-                                <p class="font-semibold">KPI Deal (Adopción): <span class="float-right font-normal text-slate-500">Target: 100%</span></p>
-                                <div class="progress-bar-bg h-5 w-full mt-1"><div class="progress-bar" style="width: 50%; background-color: var(--google-yellow);">50% (Avg)</div></div>
-                            </li>
-                            <li>
+
                                 <p class="font-semibold">Proyectos Co-desarrollo: <span class="float-right font-normal text-slate-500">Target: 1</span></p>
+
                                 <div class="progress-bar-bg h-5 w-full mt-1"><div class="progress-bar" style="width: 50%; background-color: var(--google-yellow);">1</div></div>
+
                             </li>
+
                              <li>
+
                                 <p class="font-semibold">Mix de Producto (Non-Search): <span class="float-right font-normal text-slate-500">Target: >60%</span></p>
+
                                 <div class="progress-bar-bg h-5 w-full mt-1"><div class="progress-bar" style="width: 50%; background-color: var(--google-yellow);">50%</div></div>
+
                             </li>
+
                              <li>
+
                                 <p class="font-semibold">Proyectos Solutions Engineering <span class="float-right font-normal text-slate-500">Target: 3</span></p>
+
                                 <div class="progress-bar-bg h-5 w-full mt-1"><div class="progress-bar" style="width: 100%; background-color: var(--google-yellow);">5</div></div>
+
                             </li>
+
                         </ul>
+
                     </div>
+
                 </div>
+
             </section>
+
             
+
             <section id="tab-deals" class="tab-content hidden">
+
                 <div class="text-center mb-10">
+
                     <h2 class="text-2xl font-bold" style="color:var(--adsmurai-blue);">Seguimiento Google Deals 2025</h2>
+
                 </div>
+
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+
                     <div class="lg:col-span-2 bg-white p-6 rounded-lg shadow-sm">
+
                         <h3 class="font-bold text-lg mb-4">VIP Deal (Crecimiento Inversión)</h3>
+
                         <div class="overflow-x-auto">
+
                             <table class="w-full text-left">
+
                                 <thead>
+
                                     <tr class="border-b">
+
                                         <th class="py-2 px-2">Tier</th>
+
                                         <th class="py-2 px-2">Objetivo</th>
+
                                         <th class="py-2 px-2">Recompensa</th>
+
                                         <th class="py-2 px-2">Estado</th>
+
                                     </tr>
+
                                 </thead>
+
                                 <tbody id="vip-deals-table-body" class="text-slate-700">
+
                                 </tbody>
+
                             </table>
+
                         </div>
+
                     </div>
+
                     <div class="bg-white p-6 rounded-lg shadow-sm text-center">
+
                         <h3 class="font-bold text-lg mb-4">Progreso Inversión Cualificada</h3>
+
                         <div class="chart-container h-64 max-h-64">
+
                             <canvas id="dealProgressChart"></canvas>
+
                         </div>
-                        <div class="mt-4">
-                            <p id="deal-progress-text" class="text-xl font-bold text-slate-800"></p>
-                            <p class="text-sm text-green-600 font-semibold mt-1">¡Tier 1 y 2 Conseguidos! (100% Deal Compliance)</p>
-                            <p class="text-xs text-slate-500 mt-1">Tier 3 representa un objetivo "Extra Mile"</p>
-                        </div>
+
+                        <p id="deal-progress-text" class="mt-4 text-slate-600 font-semibold"></p>
+
                     </div>
+
                 </div>
+
                  <div class="bg-white p-6 rounded-lg shadow-sm">
+
                     <h3 class="font-bold text-lg mb-4">KPI Deal (Adopción y Formación)</h3>
+
                     <div id="kpi-deals-container" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
                     </div>
+
                 </div>
+
             </section>
+
+
 
             <section id="tab-hitos" class="tab-content hidden">
+
                 <div class="text-center mb-10">
+
                     <h2 class="text-2xl font-bold" style="color:var(--adsmurai-blue);">Hoja de Ruta de Hitos 2025 - 2026</h2>
+
                 </div>
+
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
+
                     <div>
+
                         <h3 class="text-xl font-bold mb-6 text-slate-700 text-center">2025</h3>
+
                         <div id="milestones-2025" class="relative timeline-vertical"></div>
+
                     </div>
+
                     <div>
+
                         <h3 class="text-xl font-bold mb-6 text-slate-700 text-center">2026</h3>
+
                         <div id="milestones-2026" class="relative timeline-vertical"></div>
+
                     </div>
+
                 </div>
+
             </section>
+
+
 
             <section id="tab-transformacion" class="tab-content hidden">
+
                  <div class="text-center mb-10">
+
                     <h2 class="text-2xl font-bold" style="color:var(--adsmurai-blue);">Los 5 Pilares de la Transformación</h2>
+
                 </div>
+
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
                     <div class="kpi-card p-6">
+
                         <h3 class="text-xl font-bold mb-2">1. Evolución Organizativa</h3>
+
                         <p class="text-slate-600">Implementar el modelo "Hub & Spoke" para fomentar la especialización y proactividad, con nuevos roles que incentiven la creación de valor estratégico.</p>
+
                     </div>
+
                      <div class="kpi-card p-6">
+
                         <h3 class="text-xl font-bold mb-2">2. Capital Humano: Cuidar y Retener</h3>
+
                         <p class="text-slate-600">Lanzar la "Academia Adsmurai-Google", vinculando formación y certificación a un plan de carrera claro y a un sistema de reconocimiento explícito por la labor formativa interna.</p>
+
                     </div>
+
                      <div class="kpi-card p-6">
+
                         <h3 class="text-xl font-bold mb-2">3. Capital Humano: Atraer</h3>
+
                         <p class="text-slate-600">Definir y comunicar una propuesta de valor al empleado (EVP) que nos posicione como un "imán de talento", destacando la cultura de excelencia, el desarrollo profesional y los proyectos innovadores.</p>
+
                     </div>
+
                     <div class="kpi-card p-6">
+
                         <h3 class="text-xl font-bold mb-2">4. Sinergia y Procesos</h3>
+
                         <p class="text-slate-600">Crear un "Pipeline Unificado" y estandarizar flujos de comunicación y procesos clave (ej. briefing de proyectos) de forma transversal para romper los silos y aumentar la eficiencia.</p>
+
                     </div>
+
                     <div class="kpi-card p-6">
+
                         <h3 class="text-xl font-bold mb-2">5. El "Plan de Shift": Definir el Futuro</h3>
+
                         <p class="text-slate-600">Aterrizar el concepto del "Plan de Shift". Definir qué significa en la práctica más allá de la IA, cómo se integra en los OKRs de cada departamento y qué soluciones concretas se desarrollarán.</p>
+
                     </div>
+
                 </div>
+
             </section>
+
         </main>
+
     </div>
 
+
+
     <script>
+
         document.addEventListener('DOMContentLoaded', function () {
+
             Chart.register(ChartDataLabels);
 
+
+
             const investmentData = {
+
                 labels: ['2023', '2024', '2025 (P)', '2026 (P)', '2027 (P)'],
+
                 data: [39.0, 80.0, 100.0, 135.0, 180.0]
+
             };
 
-            // ACTUALIZACIÓN: Datos VIP Deals según screenshot
+
+
             const vipDealsData = [
-                { tier: 'Tier 1', objective: '€10.08M (40%)', reward: '€70K', status: 'Conseguido' },
-                { tier: 'Tier 2', objective: '€11.52M (60%)', reward: '€70K', status: 'Conseguido' },
-                { tier: 'Tier 3 (Stretch)', objective: '€15.55M (120%)', reward: '€80K', status: 'No Conseguido' },
+
+                { tier: 'Tier 1', objective: '€10.08M (40%)', reward: '€70K', status: 'Achieved' },
+
+                { tier: 'Tier 2', objective: '€11.52M (60%)', reward: '€70K', status: 'Achieved' },
+
+                { tier: 'Tier 3 - Strech', objective: '€15.55M (120%)', reward: '€80K', status: 'Unachieved' },
+
             ];
+
+
 
             const kpiDealsData = [
+
                 { kpi: 'Broad Match + Smart Bidding', target: 'Adoption', current: 50.50, tier1: 63.0, tier2: 70.0, tier3: 84.0, incentive: '0% of €69,766', status: 'Unachieved' },
+
                 { kpi: 'Search Value-Based Bidding', target: 'Adoption', current: 72.60, tier1: 72.0, tier2: 80.0, tier3: 96.0, incentive: '42% of €38,621', status: 'Tier 1 Achieved' },
+
                 { kpi: 'Performance-Powered Conversions', target: 'Adoption', current: 86.90, tier1: 82.6, tier2: 91.8, tier3: 100.0, incentive: '42% of €33,399', status: 'Tier 1 Achieved' },
+
                 { kpi: 'Full Value of Web & App', target: 'Adoption', current: 49.00, tier1: 58.5, tier2: 65.0, tier3: 78.0, incentive: '0% of €33,887', status: 'Unachieved' },
+
                 { kpi: 'Google Ads Search Certification', target: 'Trainings', current: 55, tier1: 0, tier2: 17, tier3: null, incentive: '100% of €7,859', status: 'Tier 2 Achieved' },
+
                 { kpi: 'Google Analytics Certification', target: 'Trainings', current: 20, tier1: 0, tier2: 17, tier3: null, incentive: '100% of €7,859', status: 'Tier 2 Achieved' },
+
             ];
+
             
-            // ACTUALIZACIÓN: Datos para el gráfico de progreso
+
             const dealProgressData = {
-                current: 12.2, // Cierre Año
+
+                current: 12.2, // Baseline 2024
+
                 tier1: 10.08,
+
                 tier2: 11.52,
-                tier3: 15.55 // Maximo (Stretch goal)
+
+                max: 12
+
             };
 
+
+
             const milestonesData = [
+
                 { year: 2025, month: 'Ene', title: 'Premio GMPA', status: 'completed' },
+
                 { year: 2025, month: 'Feb', title: 'Certificación Meridian', status: 'completed' },
+
                 { year: 2025, month: 'Mar', title: 'Certificación Incrementalidad', status: 'completed' },
+
                 { year: 2025, month: 'Jul', title: 'Revisión H1 VIP Deal', status: 'predicted' },
+
                 { year: 2025, month: 'Dic', title: 'Cierre VIP Deal 2025', status: 'predicted' },
+
                 { year: 2026, month: 'Mar', title: 'Lanzamiento Proyecto Co-dev #1', status: 'predicted'},
+
                 { year: 2026, month: 'Jun', title: 'Consecución Certificación GCAS', status: 'predicted'},
+
                 { year: 2026, month: 'Sep', title: 'Expansión LATAM (Fase 1)', status: 'predicted'},
+
             ];
+
+
 
             let investmentChart, dealProgressChart;
 
+
+
             function renderInvestmentChart() {
+
                 const ctx = document.getElementById('investmentChart').getContext('2d');
+
                 investmentChart = new Chart(ctx, {
+
                     type: 'bar',
+
                     data: {
+
                         labels: investmentData.labels,
+
                         datasets: [{
+
                             label: 'Inversión Gestionada (€M)',
+
                             data: investmentData.data,
+
                             backgroundColor: (context) => context.dataIndex < 2 ? 'rgba(66, 133, 244, 0.7)' : 'rgba(0, 174, 239, 0.7)',
+
                             borderWidth: 1,
+
                         }]
+
                     },
+
                     options: {
+
                         responsive: true,
+
                         maintainAspectRatio: false,
+
                         scales: { y: { beginAtZero: true, title: { display: true, text: 'Millones de Euros (€)' } }, x: { title: { display: true, text: 'Año (P = Propuesta)' } } },
+
                         plugins: { legend: { display: false } }
+
                     }
+
                 });
+
             }
+
+
 
             function renderDeals() {
+
                 const vipTableBody = document.getElementById('vip-deals-table-body');
+
                 vipTableBody.innerHTML = '';
+
                 vipDealsData.forEach(d => {
-                    // Lógica de colores para estado
-                    let statusClass = 'text-gray-500';
-                    let rowClass = '';
-                    if (d.status.includes('Conseguido')) {
-                        statusClass = 'text-green-600 font-bold';
-                        rowClass = 'bg-green-50'; // Resaltar filas conseguidas
-                    } else if (d.status.includes('No Conseguido')) {
-                        statusClass = 'text-red-500';
-                    }
+
+                    let statusClass = d.status.includes('En curso') ? 'text-yellow-600' : d.status.includes('Pendiente') ? 'text-red-600' : 'text-gray-500';
 
                     const row = `
-                        <tr class="border-t ${rowClass}">
+
+                        <tr class="border-t">
+
                             <td class="p-2 font-semibold">${d.tier}</td>
+
                             <td class="p-2">${d.objective}</td>
+
                             <td class="p-2">${d.reward}</td>
-                            <td class="p-2 ${statusClass}">${d.status}</td>
+
+                            <td class="p-2 font-semibold ${statusClass}">${d.status}</td>
+
                         </tr>
+
                     `;
+
                     vipTableBody.innerHTML += row;
+
                 });
+
+
 
                 const kpiContainer = document.getElementById('kpi-deals-container');
+
                 kpiContainer.innerHTML = '';
+
                 kpiDealsData.forEach(d => {
+
                     const isAdoption = d.target === 'Adoption';
+
                     const maxValue = isAdoption ? 100 : d.tier2 * 1.5;
+
                     const currentPercent = (d.current / maxValue) * 100;
+
                     const tier1Percent = d.tier1 ? (d.tier1 / maxValue) * 100 : 0;
+
                     const tier2Percent = d.tier2 ? (d.tier2 / maxValue) * 100 : 0;
+
                     const tier3Percent = d.tier3 ? (d.tier3 / maxValue) * 100 : 0;
+
                     const statusClass = d.status.includes('Achieved') ? 'text-green-600' : 'text-red-600';
 
+
+
                     const card = `
+
                         <div class="kpi-card p-4">
+
                             <div class="flex justify-between items-start">
+
                                 <h4 class="font-bold text-md mb-1">${d.kpi}</h4>
+
                                 <span class="text-xs font-bold px-2 py-1 rounded-full ${statusClass} bg-opacity-10">${d.status}</span>
+
                             </div>
+
                             <p class="text-sm text-slate-500 mb-3">Incentivo: <span class="font-semibold">${d.incentive}</span></p>
+
                             
+
                             <div class="deal-progress-bar">
+
                                 <div class="deal-progress-bar-fill" style="width: ${currentPercent}%;"></div>
+
                                 ${tier1Percent ? `<div class="deal-progress-marker" style="left: ${tier1Percent}%;" title="Tier 1: ${d.tier1}"></div>` : ''}
+
                                 ${tier2Percent ? `<div class="deal-progress-marker" style="left: ${tier2Percent}%;" title="Tier 2: ${d.tier2}"></div>` : ''}
+
                                 ${tier3Percent ? `<div class="deal-progress-marker" style="left: ${tier3Percent}%;" title="Tier 3: ${d.tier3}"></div>` : ''}
+
                             </div>
+
                             <div class="flex justify-between text-xs mt-1 text-slate-500">
+
                                 <span>Actual: <strong class="text-slate-800">${d.current}${isAdoption ? '%' : ''}</strong></span>
+
                                 <span>T3: <strong class="text-slate-800">${d.tier3 ? d.tier3 + '%' : '-'}</strong></span>
+
                             </div>
+
                         </div>
+
                     `;
+
                     kpiContainer.innerHTML += card;
+
                 });
+
             }
 
-            // MODIFICACIÓN PRINCIPAL: Lógica del Chart para Tiers
+
+
             function renderDealProgressChart() {
+
                 const ctx = document.getElementById('dealProgressChart').getContext('2d');
-                
-                // Calcular segmentos del Doughnut para que representen el camino hasta Tier 3
-                // Segmento 1: 0 a Tier 1
-                const seg1 = dealProgressData.tier1;
-                // Segmento 2: Tier 1 a Tier 2
-                const seg2 = dealProgressData.tier2 - dealProgressData.tier1;
-                // Segmento 3: Tier 2 a Actual (El "Extra")
-                const seg3 = dealProgressData.current - dealProgressData.tier2;
-                // Segmento 4: Actual a Tier 3 (Lo que faltó para el Stretch)
-                const seg4 = dealProgressData.tier3 - dealProgressData.current;
 
                 dealProgressChart = new Chart(ctx, {
+
                     type: 'doughnut',
+
                     data: {
-                        labels: ['Tier 1 (Logrado)', 'Tier 2 (Logrado)', 'Extra Mile (Logrado)', 'Tier 3 (No alcanzado)'],
+
+                        labels: ['Progreso Actual', 'Restante a Tier 1', 'Restante a Tier 2'],
+
                         datasets: [{
-                            data: [seg1, seg2, seg3, seg4],
-                            backgroundColor: [
-                                'rgba(66, 133, 244, 0.6)', // Azul Google Claro
-                                'rgba(66, 133, 244, 1)',   // Azul Google Fuerte
-                                'rgba(52, 168, 83, 1)',    // Verde Google (Éxito Extra)
-                                'rgba(229, 231, 235, 1)',  // Gris (Faltante)
+
+                            data: [
+
+                                dealProgressData.current,
+
+                                dealProgressData.tier1 - dealProgressData.current,
+
+                                dealProgressData.tier2 - dealProgressData.tier1
+
                             ],
+
+                            backgroundColor: [
+
+                                'rgba(66, 133, 244, 0.8)',
+
+                                'rgba(251, 188, 5, 0.8)',
+
+                                'rgba(234, 67, 53, 0.8)',
+
+                            ],
+
                             borderColor: '#fff',
+
                             borderWidth: 2,
+
                             circumference: 180,
+
                             rotation: 270,
+
                         }]
+
                     },
+
                     options: {
+
                         responsive: true,
+
                         maintainAspectRatio: false,
+
                         plugins: {
-                            legend: { display: false }, // Ocultamos leyenda estándar
-                            tooltip: { 
-                                callbacks: {
-                                    label: function(context) {
-                                        // Mostrar valores acumulados aproximados en tooltip para contexto
-                                        return context.label; 
-                                    }
-                                }
-                            },
+
+                            legend: { display: false },
+
+                            tooltip: { enabled: false },
+
                             datalabels: {
-                                color: '#333',
-                                font: { weight: 'bold', size: 10 },
-                                anchor: 'center',
-                                align: 'center',
+
                                 formatter: (value, context) => {
-                                    // Etiquetas personalizadas dentro de los segmentos
-                                    if (context.dataIndex === 0) return "T1\n€10.08M";
-                                    if (context.dataIndex === 1) return "T2\n€11.52M";
-                                    if (context.dataIndex === 2) return "Extra";
-                                    if (context.dataIndex === 3) return "T3\n€15.55M";
-                                    return "";
+
+                                    return context.chart.data.labels[context.dataIndex];
+
                                 },
-                                display: 'auto'
+
+                                color: '#333',
+
+                                anchor: 'end',
+
+                                align: 'end',
+
+                                offset: 10
+
                             }
+
                         }
+
                     }
+
                 });
-                
-                document.getElementById('deal-progress-text').innerText = `Cierre Año: €${dealProgressData.current}M`;
+
+                document.getElementById('deal-progress-text').innerText = `Actual: €${dealProgressData.current}M de €${dealProgressData.tier1}M (Tier 1)`;
+
             }
+
+
 
             function renderMilestones() {
+
                 const container2025 = document.getElementById('milestones-2025');
+
                 const container2026 = document.getElementById('milestones-2026');
+
                 container2025.innerHTML = '';
+
                 container2026.innerHTML = '';
 
+
+
                 milestonesData.forEach(m => {
+
                     const card = `
+
                         <div class="timeline-vertical-item mb-8 ${m.status}">
+
                             <div class="timeline-vertical-dot"></div>
+
                             <div class="ml-4">
+
                                 <p class="font-bold text-sm" style="color:var(--adsmurai-blue);">${m.month} ${m.year}</p>
+
                                 <div class="bg-white p-4 rounded-lg shadow-sm mt-1">
+
                                     <p class="text-slate-600">${m.title}</p>
+
                                 </div>
+
                             </div>
+
                         </div>
+
                     `;
+
                     if (m.year === 2025) {
+
                         container2025.innerHTML += card;
+
                     } else if (m.year === 2026) {
+
                         container2026.innerHTML += card;
+
                     }
+
                 });
+
             }
+
+
 
             const tabs = document.querySelectorAll('.nav-link');
+
             const tabContents = document.querySelectorAll('.tab-content');
+
             let activeCharts = {};
 
+
+
             function switchTab(tabId) {
+
                 tabs.forEach(tab => tab.classList.toggle('active', tab.dataset.tab === tabId));
+
                 tabContents.forEach(content => content.classList.toggle('hidden', content.id !== tabId));
 
+
+
                 if (tabId === 'tab-vision' && !activeCharts.investment) {
+
                     renderInvestmentChart();
+
                     activeCharts.investment = true;
+
                 }
+
                 if (tabId === 'tab-deals' && !activeCharts.deals) {
+
                     renderDeals();
+
                     renderDealProgressChart();
+
                     activeCharts.deals = true;
+
                 }
+
                 if (tabId === 'tab-hitos' && !activeCharts.hitos) {
+
                     renderMilestones();
+
                     activeCharts.hitos = true;
+
                 }
+
             }
+
             
+
             tabs.forEach(tab => tab.addEventListener('click', () => switchTab(tab.dataset.tab)));
+
             
+
             document.querySelectorAll('.accordion-header').forEach(header => {
+
                 header.addEventListener('click', () => {
+
                     const content = header.nextElementSibling;
+
                     const icon = header.querySelector('span');
+
                     const isOpening = !content.style.maxHeight;
+
                     
+
                     document.querySelectorAll('.accordion-content').forEach(c => c.style.maxHeight = null);
+
                     document.querySelectorAll('.accordion-header span').forEach(i => i.classList.remove('rotate-45'));
 
+
+
                     if (isOpening) {
+
                         content.style.maxHeight = content.scrollHeight + "px";
+
                         icon.classList.add('rotate-45');
+
                     }
+
                 });
+
             });
 
+
+
             switchTab('tab-vision');
+
         });
+
     </script>
+
 </body>
+
 </html>
