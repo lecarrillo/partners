@@ -798,11 +798,11 @@
 
             const vipDealsData = [
 
-                { tier: 'Tier 1', objective: '€10.08M (40%)', reward: '€70K', status: 'Achieved' },
+                { tier: 'Tier 1', objective: '€10.08M (40%)', reward: '€70K', status: '50% Payout Achieved' },
 
-                { tier: 'Tier 2', objective: '€11.52M (60%)', reward: '€70K', status: 'Achieved' },
+                { tier: 'Tier 2', objective: '€11.52M (60%)', reward: '€70K', status: '100% Payout Achieved' },
 
-                { tier: 'Tier 3 - Strech', objective: '€15.55M (120%)', reward: '€80K', status: 'Unachieved' },
+                { tier: 'Tier 3 - Strech', objective: '€15.55M (120%)', reward: '€80K', status: '120% Payout Unachieved' },
 
             ];
 
@@ -1094,7 +1094,7 @@
 
                 });
 
-                document.getElementById('deal-progress-text').innerText = `Actual: €${dealProgressData.current}M de €${dealProgressData.tier1}M (Tier 1)`;
+                document.getElementById('deal-progress-text').innerText = `Cierre 2025: €${dealProgressData.current}M de €${dealProgressData.tier2}M (Tier 2)`;
 
             }
 
