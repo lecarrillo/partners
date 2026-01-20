@@ -3,13 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- Chosen Palette: Adsmurai-Google Strategic Alliance v4 -->
-    <!-- Application Structure Plan: El dashboard se renombra a "Google Partnership Hub" para reflejar su doble función: estrategia y seguimiento. Se mantiene la estructura de pestañas por su claridad. La pestaña "Hitos" se rediseña por completo para mostrar una línea de tiempo vertical, siguiendo la referencia visual del usuario. Esto mejora la visualización cronológica de los logros. El resto de las pestañas conservan la estructura y contenido de la v3, que ya habían sido validados. -->
-    <!-- Visualization & Content Choices: 
-        - Hitos (Línea de Tiempo Vertical): Se implementa un nuevo diseño de timeline vertical para la pestaña de Hitos. Objetivo: Organizar/Cambio. Interacción: Visual. Justificación: Cumple con el requisito explícito del usuario para una mejor visualización cronológica. (HTML/CSS)
-        - KPIs, OKRs, Deals (Sin cambios): Se mantienen las visualizaciones de la v3 (Tarjetas, Barras de Progreso, Tabla, Gauge) ya que el contenido fue aprobado y solo se solicitó un cambio en el enfoque general y en la sección de hitos. Se añade la tabla de KPI Deal.
-    -->
-    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
     <title>Google Partnership Hub | Adsmurai 2025-2027</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -35,6 +28,7 @@
             transition: all 0.3s ease;
             border-bottom: 3px solid transparent;
             padding-bottom: 8px;
+            cursor: pointer;
         }
         .nav-link.active {
             border-bottom-color: var(--adsmurai-accent);
@@ -74,6 +68,8 @@
             font-weight: 600;
             font-size: 0.75rem;
             line-height: 1.6;
+            white-space: nowrap;
+            padding: 0 5px;
         }
         .accordion-header { cursor: pointer; }
         .accordion-content {
@@ -130,6 +126,7 @@
             bottom: 0;
             width: 2px;
             background-color: rgba(0,0,0,0.3);
+            z-index: 10;
         }
     </style>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -285,10 +282,18 @@
                         <h3 class="text-xl font-bold mb-4 border-b-2 pb-2" style="border-color: var(--google-yellow);">3. Co-innovación y Sinergia</h3>
                         <ul class="space-y-4 mt-4">
                             <li>
-                                <p class="font-semibold">VIP & KPI Deal: <span class="float-right font-normal text-slate-500">Target: 100%</span></p>
-                                <div class="progress-bar-bg h-5 w-full mt-1"><div class="progress-bar" style="width: 70%; background-color: var(--google-yellow);">70%</div></div>
+                                <div class="flex justify-between items-center mb-1">
+                                    <p class="font-semibold">VIP Deal (Inversión)</p>
+                                    <span class="text-xs font-bold text-green-600 bg-green-100 px-2 py-0.5 rounded">Tier 2 Alcanzado</span>
+                                </div>
+                                <span class="text-xs text-slate-500 block mb-1">Compliance 100% Garantizado</span>
+                                <div class="progress-bar-bg h-5 w-full"><div class="progress-bar" style="width: 100%; background-color: var(--google-green);">100% (Tier 2)</div></div>
                             </li>
                              <li>
+                                <p class="font-semibold">KPI Deal (Adopción): <span class="float-right font-normal text-slate-500">Target: 100%</span></p>
+                                <div class="progress-bar-bg h-5 w-full mt-1"><div class="progress-bar" style="width: 50%; background-color: var(--google-yellow);">50% (Avg)</div></div>
+                            </li>
+                            <li>
                                 <p class="font-semibold">Proyectos Co-desarrollo: <span class="float-right font-normal text-slate-500">Target: 1</span></p>
                                 <div class="progress-bar-bg h-5 w-full mt-1"><div class="progress-bar" style="width: 50%; background-color: var(--google-yellow);">1</div></div>
                             </li>
@@ -332,7 +337,11 @@
                         <div class="chart-container h-64 max-h-64">
                             <canvas id="dealProgressChart"></canvas>
                         </div>
-                        <p id="deal-progress-text" class="mt-4 text-slate-600 font-semibold"></p>
+                        <div class="mt-4">
+                            <p id="deal-progress-text" class="text-xl font-bold text-slate-800"></p>
+                            <p class="text-sm text-green-600 font-semibold mt-1">¡Tier 1 y 2 Conseguidos! (100% Deal Compliance)</p>
+                            <p class="text-xs text-slate-500 mt-1">Tier 3 representa un objetivo "Extra Mile"</p>
+                        </div>
                     </div>
                 </div>
                  <div class="bg-white p-6 rounded-lg shadow-sm">
@@ -397,26 +406,28 @@
                 data: [39.0, 80.0, 100.0, 135.0, 180.0]
             };
 
+            // ACTUALIZACIÓN: Datos VIP Deals según screenshot
             const vipDealsData = [
-                { tier: 'Tier 1', objective: '€10.08M (40%)', reward: '€70K', status: 'Achieved' },
-                { tier: 'Tier 2', objective: '€11.52M (60%)', reward: '€70K', status: 'Achieved' },
-                { tier: 'Tier 3 - Strech', objective: '€15.55M (120%)', reward: '€80K', status: 'Unachieved' },
+                { tier: 'Tier 1', objective: '€10.08M (40%)', reward: '€70K', status: 'Conseguido' },
+                { tier: 'Tier 2', objective: '€11.52M (60%)', reward: '€70K', status: 'Conseguido (Target)' },
+                { tier: 'Tier 3 (Stretch)', objective: '€15.55M (120%)', reward: '€80K', status: 'No Conseguido' },
             ];
 
             const kpiDealsData = [
                 { kpi: 'Broad Match + Smart Bidding', target: 'Adoption', current: 50.50, tier1: 63.0, tier2: 70.0, tier3: 84.0, incentive: '0% of €69,766', status: 'Unachieved' },
                 { kpi: 'Search Value-Based Bidding', target: 'Adoption', current: 72.60, tier1: 72.0, tier2: 80.0, tier3: 96.0, incentive: '42% of €38,621', status: 'Tier 1 Achieved' },
-                { kpi: 'Performance-Powered Conversions', target: 'Adoption', current: 86.90, tier1: 82.6, tier2: 91.8, tier3: 100.0, incentive: '€42% of 33,399', status: 'Tier 1 Achieved' },
+                { kpi: 'Performance-Powered Conversions', target: 'Adoption', current: 86.90, tier1: 82.6, tier2: 91.8, tier3: 100.0, incentive: '42% of €33,399', status: 'Tier 1 Achieved' },
                 { kpi: 'Full Value of Web & App', target: 'Adoption', current: 49.00, tier1: 58.5, tier2: 65.0, tier3: 78.0, incentive: '0% of €33,887', status: 'Unachieved' },
                 { kpi: 'Google Ads Search Certification', target: 'Trainings', current: 55, tier1: 0, tier2: 17, tier3: null, incentive: '100% of €7,859', status: 'Tier 2 Achieved' },
                 { kpi: 'Google Analytics Certification', target: 'Trainings', current: 20, tier1: 0, tier2: 17, tier3: null, incentive: '100% of €7,859', status: 'Tier 2 Achieved' },
             ];
             
+            // ACTUALIZACIÓN: Datos para el gráfico de progreso
             const dealProgressData = {
-                current: 12.2, // Baseline 2024
+                current: 12.2, // Cierre Año
                 tier1: 10.08,
                 tier2: 11.52,
-                max: 12
+                tier3: 15.55 // Maximo (Stretch goal)
             };
 
             const milestonesData = [
@@ -458,13 +469,22 @@
                 const vipTableBody = document.getElementById('vip-deals-table-body');
                 vipTableBody.innerHTML = '';
                 vipDealsData.forEach(d => {
-                    let statusClass = d.status.includes('En curso') ? 'text-yellow-600' : d.status.includes('Pendiente') ? 'text-red-600' : 'text-gray-500';
+                    // Lógica de colores para estado
+                    let statusClass = 'text-gray-500';
+                    let rowClass = '';
+                    if (d.status.includes('Conseguido')) {
+                        statusClass = 'text-green-600 font-bold';
+                        rowClass = 'bg-green-50'; // Resaltar filas conseguidas
+                    } else if (d.status.includes('No Conseguido')) {
+                        statusClass = 'text-red-500';
+                    }
+
                     const row = `
-                        <tr class="border-t">
+                        <tr class="border-t ${rowClass}">
                             <td class="p-2 font-semibold">${d.tier}</td>
                             <td class="p-2">${d.objective}</td>
                             <td class="p-2">${d.reward}</td>
-                            <td class="p-2 font-semibold ${statusClass}">${d.status}</td>
+                            <td class="p-2 ${statusClass}">${d.status}</td>
                         </tr>
                     `;
                     vipTableBody.innerHTML += row;
@@ -505,22 +525,31 @@
                 });
             }
 
+            // MODIFICACIÓN PRINCIPAL: Lógica del Chart para Tiers
             function renderDealProgressChart() {
                 const ctx = document.getElementById('dealProgressChart').getContext('2d');
+                
+                // Calcular segmentos del Doughnut para que representen el camino hasta Tier 3
+                // Segmento 1: 0 a Tier 1
+                const seg1 = dealProgressData.tier1;
+                // Segmento 2: Tier 1 a Tier 2
+                const seg2 = dealProgressData.tier2 - dealProgressData.tier1;
+                // Segmento 3: Tier 2 a Actual (El "Extra")
+                const seg3 = dealProgressData.current - dealProgressData.tier2;
+                // Segmento 4: Actual a Tier 3 (Lo que faltó para el Stretch)
+                const seg4 = dealProgressData.tier3 - dealProgressData.current;
+
                 dealProgressChart = new Chart(ctx, {
                     type: 'doughnut',
                     data: {
-                        labels: ['Progreso Actual', 'Restante a Tier 1', 'Restante a Tier 2'],
+                        labels: ['Tier 1 (Logrado)', 'Tier 2 (Logrado)', 'Extra Mile (Logrado)', 'Tier 3 (No alcanzado)'],
                         datasets: [{
-                            data: [
-                                dealProgressData.current,
-                                dealProgressData.tier1 - dealProgressData.current,
-                                dealProgressData.tier2 - dealProgressData.tier1
-                            ],
+                            data: [seg1, seg2, seg3, seg4],
                             backgroundColor: [
-                                'rgba(66, 133, 244, 0.8)',
-                                'rgba(251, 188, 5, 0.8)',
-                                'rgba(234, 67, 53, 0.8)',
+                                'rgba(66, 133, 244, 0.6)', // Azul Google Claro
+                                'rgba(66, 133, 244, 1)',   // Azul Google Fuerte
+                                'rgba(52, 168, 83, 1)',    // Verde Google (Éxito Extra)
+                                'rgba(229, 231, 235, 1)',  // Gris (Faltante)
                             ],
                             borderColor: '#fff',
                             borderWidth: 2,
@@ -532,21 +561,35 @@
                         responsive: true,
                         maintainAspectRatio: false,
                         plugins: {
-                            legend: { display: false },
-                            tooltip: { enabled: false },
+                            legend: { display: false }, // Ocultamos leyenda estándar
+                            tooltip: { 
+                                callbacks: {
+                                    label: function(context) {
+                                        // Mostrar valores acumulados aproximados en tooltip para contexto
+                                        return context.label; 
+                                    }
+                                }
+                            },
                             datalabels: {
-                                formatter: (value, context) => {
-                                    return context.chart.data.labels[context.dataIndex];
-                                },
                                 color: '#333',
-                                anchor: 'end',
-                                align: 'end',
-                                offset: 10
+                                font: { weight: 'bold', size: 10 },
+                                anchor: 'center',
+                                align: 'center',
+                                formatter: (value, context) => {
+                                    // Etiquetas personalizadas dentro de los segmentos
+                                    if (context.dataIndex === 0) return "T1\n€10.08M";
+                                    if (context.dataIndex === 1) return "T2\n€11.52M";
+                                    if (context.dataIndex === 2) return "Extra";
+                                    if (context.dataIndex === 3) return "T3\n€15.55M";
+                                    return "";
+                                },
+                                display: 'auto'
                             }
                         }
                     }
                 });
-                document.getElementById('deal-progress-text').innerText = `Actual: €${dealProgressData.current}M de €${dealProgressData.tier1}M (Tier 1)`;
+                
+                document.getElementById('deal-progress-text').innerText = `Cierre Año: €${dealProgressData.current}M`;
             }
 
             function renderMilestones() {
